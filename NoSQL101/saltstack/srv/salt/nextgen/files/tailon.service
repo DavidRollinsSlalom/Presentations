@@ -1,0 +1,9 @@
+[Unit]
+Description=Start Tailon
+
+[Service]
+ExecStart=/usr/bin/tailon -f /var/log/ng-scp-web/* /var/log/ng-scp-worker/* /var/log/salt/minion -b 0.0.0.0:8084 -r '/logs/'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

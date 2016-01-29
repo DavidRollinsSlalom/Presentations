@@ -1,0 +1,25 @@
+Vagrant.configure(2) do |config|
+  config.vm.hostname = "saltstack-test"
+  config.vm.box = "bento/centos-7.1"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 8192
+    v.cpus = 4
+  end
+
+  ## For masterless, mount your salt file root
+  config.vm.synced_folder "../srv", "/srv/"
+
+  config.vm.network "private_network", ip: "192.168.33.10"
+
+  #  config.vm.provision :salt do |salt|
+  #    salt.run_highstate = true
+  #    salt.bootstrap_options = "-F -c /tmp/ -P"
+  #    salt.minion_config = "minion"
+  #  end
+
+  # our local saltstack mirror is much faster than salt-bootstrap! 
+  config.vm.provision "shell", inline: "cp /vagrant/appdev.repo /etc/yum.repos.d/appdev.repo"
+  config.vm.provision "shell", inline: "yum install salt-minion -y"
+  config.vm.provision "shell", inline: "cp /vagrant/minion /etc/salt/minion"
+end

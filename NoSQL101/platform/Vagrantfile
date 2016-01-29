@@ -1,0 +1,47 @@
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.require_version ">= 1.7.4"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "bento/centos-7.1"
+  config.vm.network "private_network", ip: "192.168.50.4"
+  config.vm.hostname = "vagrant-nosqldemo"
+
+  # Set the timezone
+  config.vm.provision :shell, :inline => "rm -f /etc/localtime; ln -s /usr/share/zoneinfo/America/Chicago /etc/localtime"
+
+  config.vm.network :forwarded_port, guest: 8080, host: 9001    # tomcat custom port (for hazelcast mancenter, etc.)
+  config.vm.network :forwarded_port, guest: 27017, host: 27017  # mongodb default port
+  config.vm.network :forwarded_port, guest: 28017, host: 28017  # mongodb HTTP port
+  config.vm.network :forwarded_port, guest: 9200, host: 9200    # elasticsearch http port
+  config.vm.network :forwarded_port, guest: 9300, host: 9300    # elasticsearch node-to-node communication
+
+  config.vm.synced_folder "..", "/ng-scp"
+  config.vm.synced_folder "../saltstack/srv/salt", "/srv/salt"
+
+  config.vm.provider :virtualbox do |vb|
+     # Don't boot with headless mode
+     #vb.gui = true
+     # IMPORTANT - "--natdnshostresolver1", "on" is used to enable hostname resolution over VPN
+     vb.customize ["modifyvm", :id, "--memory", "2048", "--natdnshostresolver1", "on"]
+     vb.name = "vagrant-nosqldemo"
+  end
+
+  config.vm.provision :salt do |salt|
+    salt.bootstrap_options = "-F -c /tmp/ -P"
+    salt.minion_config = "salt-minion"
+    salt.verbose = true
+    salt.colorize = true
+  end
+
+  config.vm.provision "base", type: "shell", inline: "salt-call --local state.sls nextgen.base"
+  config.vm.provision "java", type: "shell", inline: "salt-call --local state.sls java.oracle-jre-8"
+  config.vm.provision "mongo", type: "shell", inline: "salt-call --local state.sls nextgen.mongodb"
+  config.vm.provision "elasticsearch", type: "shell", inline: "salt-call --local state.sls nextgen.elasticsearch"
+  config.vm.provision "mancenter", type: "shell", inline: "salt-call --local state.sls nextgen.mancenter"
+
+  # Run in host instead of on guest to prevent re-executing after packaging
+  config.vm.provision "package", type: "shell", path: "package.sh"
+
+end

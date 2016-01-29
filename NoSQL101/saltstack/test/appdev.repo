@@ -1,0 +1,7 @@
+
+[appdev]
+gpgcheck=0
+humanname=AppDev Repository
+baseurl=http://psl-devimage01.lab.securustech.net/repo
+name=AppDev Repository
+

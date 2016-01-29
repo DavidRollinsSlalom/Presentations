@@ -1,0 +1,2 @@
+bamboo        ALL=(ALL)       NOPASSWD:ALL
+Defaults:bamboo !requiretty

@@ -1,0 +1,2 @@
+bamboo-startup:
+  - bamboo.agent

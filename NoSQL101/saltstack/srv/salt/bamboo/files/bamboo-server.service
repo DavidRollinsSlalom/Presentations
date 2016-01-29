@@ -1,0 +1,15 @@
+[Unit]
+Description=Bamboo Server Daemon
+
+[Service]
+Type=forking
+ExecStart=/usr/java/latest/bin/java -Dbamboo.home=/opt/bamboo/current/bin/start-bamboo.sh
+ExecStop=/usr/java/latest/bin/java -Dbamboo.home=/opt/bamboo/current/bin/stop-bamboo.sh
+PIDFile=/opt/bamboo/server/current/work/catalina.pid
+EnvironmentFile=/etc/sysconfig/bamboo
+User=bamboo
+
+[Install]
+WantedBy=multi-user.target
+Wants=postgresql.service
+

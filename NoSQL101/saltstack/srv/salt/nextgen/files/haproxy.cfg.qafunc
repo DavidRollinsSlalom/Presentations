@@ -1,0 +1,189 @@
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           10m
+    timeout connect         10s
+    timeout client          10m
+    timeout server          10m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend  main *:5000
+    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .png .css .js
+
+    use_backend static          if url_static
+    default_backend             app
+
+frontend qangweb 10.6.246.54:82
+
+# This is how we route streaming requests to the proper streamer
+    acl psl_qan1sp01 path_beg /stream/ec/n1/sp01
+    use_backend qan1sp01 if psl_qan1sp01
+
+    acl psl_qan3sp02 path_beg /stream/ec/n3/sp02
+    use_backend qan3sp02 if psl_qan3sp02
+
+    acl psl_qan3sp03 path_beg /stream/ec/n3/sp03
+    use_backend qan3sp03 if psl_qan3sp03
+
+#add 03-05-2015
+    acl psl_qaecn3sp01 path_beg /stream/ec/n3/sp01
+    use_backend qaecn3sp01 if psl_qaecn3sp01
+
+#add 03-31-2015
+    acl psl_qaatln3sp03 path_beg /stream/atl/n3/sp03
+    use_backend qaatln3sp03 if psl_qaatln3sp03
+
+#add 12-02-2015
+
+    acl psl_qaecn1sp02 path_beg /stream/ec/n1/sp02
+    use_backend qaecn1sp02 if psl_qaecn1sp02
+
+    default_backend qangweb_pool
+
+    acl svv_asset path_beg /userpics
+    use_backend svvasset if svv_asset
+
+# Nginx
+    acl client_URI path_beg /client
+    use_backend nginx if client_URI
+
+#VB
+    acl VB_DEV path_beg /dev/MConnStore/
+    use_backend DEV_VB if VB_DEV
+    acl VB_QA path_beg /qa/MConnStore/
+    use_backend QA_VB if VB_QA
+
+#mconn
+    acl mconn_go path_beg /MConnStore/
+    use_backend mconn if mconn_go
+
+#reportserver
+    acl reportserver_acl path_beg /ReportServer/
+    use_backend reportserver if reportserver_acl
+
+backend nginx
+    server psl-qac1web01 10.6.246.54:81 cookie psl-qac1web01-nginx check inter 5000
+
+backend qangweb_pool
+    balance roundrobin
+    cookie HAproxyID insert nocache
+    cookie HAproxyID insert nocache indirect
+    server psl-qac1web01 10.6.246.54:9000 cookie psl-qac1web01 check inter 5000
+
+backend qan1sp01
+   server psl-qan1recsp01 psl-qan1recsp01.lab.securustech.net:2850 check
+
+backend qan3sp02
+   server psl-qartmr01 psl-qartmr01.lab.securustech.net:9090 check
+
+backend qan3sp03
+   server psl-qaclassicrec01 psl-qaclassicrec01.lab.securustech.net:2850 check
+
+
+#add 03-05-2015
+backend qaecn3sp01
+   server psl-qan3sp01streamer01 psl-qan3scp01streamer01.lab.securustech.net
+
+#add 03-31-2015
+backend qaatln3sp03
+   server psl-qaclassicrec01 psl-qaclassicrec01.lab.securustech.net:2850 check
+
+
+#add 12-21-2015
+backend qaecn1sp02
+    server psl-qan1rtmr01 10.6.246.128:2850 check
+
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend static
+    balance     roundrobin
+    server      static 127.0.0.1:4331 check
+
+#---------------------------------------------------------------------
+# round robin balancing between the various backends
+#---------------------------------------------------------------------
+backend app
+    balance     roundrobin
+    server  app1 127.0.0.1:5001 check
+    server  app2 127.0.0.1:5002 check
+    server  app3 127.0.0.1:5003 check
+    server  app4 127.0.0.1:5004 check
+
+backend svvasset
+     reqrep ^([^\ ]*)\ /userpics/(.*) \1\ /qa/user/\2
+     server psl-isipxy01 psl-isipxy01.lab.securustech.net:80 check
+     server psl-isipxy02 psl-isipxy02.lab.securustech.net:80 check
+
+backend DEV_VB
+     reqrep ^([^\ ]*)\ /dev/(.*) \1\ /\2
+     server 10.6.242.189 10.6.242.189:8080 check
+
+backend QA_VB
+     reqrep ^([^\ ]*)\ /qa/(.*) \1\ /\2
+     server 10.51.1.44 10.51.1.44:8080 check
+         server 10.51.1.45 10.51.1.45:8080 check
+         server 10.52.1.44 10.52.1.44:8080 check
+         server 10.52.1.45 10.52.1.45:8080 check
+         server 10.6.242.224 10.6.242.224:8080 check
+         server 10.6.242.225 10.6.242.225:8080 check
+
+backend reportserver
+        server 10.6.253.168 10.6.253.168:81 check
+
+backend mconn
+        server 10.6.246.54 10.6.246.54:81 check

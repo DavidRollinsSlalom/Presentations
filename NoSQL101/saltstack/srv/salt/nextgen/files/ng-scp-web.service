@@ -1,0 +1,21 @@
+[Unit]
+Description=ng-scp-web
+
+[Service]
+#Type=forking
+RemainAfterExit=true
+#EnvironmentFile=/etc/default/ng-scp-web
+StandardOutput=null
+User=ng-scp-web
+Group=ng-scp-web
+PIDFile=/var/run/ng-scp-web/running.pid
+ExecStart=/usr/share/ng-scp-web/bin/ng-scp-web
+# See MAX_OPEN_FILES in sysconfig
+LimitNOFILE=65535
+# See MAX_LOCKED_MEMORY in sysconfig, use "infinity" when MAX_LOCKED_MEMORY=unlimited and using bootstrap.mlockall: true
+LimitMEMLOCK=infinity
+# Shutdown delay in seconds, before process is tried to be killed with KILL (if configured)
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

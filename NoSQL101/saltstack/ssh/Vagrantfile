@@ -1,0 +1,22 @@
+Vagrant.configure(2) do |config|
+  config.vm.hostname = "salt-ssh"
+  config.vm.box = "bento/centos-7.1"
+
+  ## For masterless, mount your salt file root
+  config.vm.synced_folder "../srv", "/srv/"
+
+  config.vm.network "private_network", ip: "192.168.33.10"
+
+  # salt-vagrant config
+  config.vm.provision :salt do |salt|
+    salt.run_highstate = false
+    salt.bootstrap_options = "-F -c /tmp/ -P"
+    salt.minion_config = "minion"
+  end
+
+  config.vm.provision "salt-master", type: "shell", inline: "salt-call --local state.sls salt.ssh"
+
+  config.vm.provision "file", source: "./roster", destination: "/tmp/roster"
+  config.vm.provision "cp-roster", type: "shell", inline: "sudo mv /tmp/roster /etc/salt/roster"
+
+end

@@ -1,0 +1,10 @@
+Checklist:
+
+- Vagrant started
+- chrome open to Sense
+	chrome-extension://lhjgkmllcaadmopgmanpapmpjgmfcfig/index.html
+	http://localhost:9200/_plugin/HQ/
+- Robo mongo up
+	Open all 5 scripts and line them up
+- Slides ready
+- Projector working with duplicate as well as presenter mode?

@@ -1,0 +1,154 @@
+
+PUT /products/product/1
+{
+     "item": "card",
+     "rating": 15
+}
+
+GET /products/product/1
+
+GET /products/_mapping/product
+
+GET /products/product/_search
+
+
+
+
+
+GET /movies/movie/1
+
+GET /movies/_mapping
+
+
+PUT /movies/movie/1
+{
+    "title": "The Godfather",
+    "director": "Francis Ford Coppola",
+    "year": 1972,
+    "genres": ["Crime", "Drama"]
+}
+
+POST /movies/movie/_search
+{
+"query": {
+    "filtered": {
+      "query": {
+        "query_string": {
+          "query": "drama"
+        }
+      }
+    }
+  }
+}
+
+POST /movies/movie/_search
+{
+    "query": {
+        "query_string": {
+            "query": "kill"
+        }
+    }
+}
+
+PUT /movies/movie/7
+{
+    "title": "Ghostbusters",
+    "director": "Ivan Reitman",
+    "year": 1984,
+    "genres": ["Comedy", "Fantasy", "Sci-Fi"]
+}
+
+DELETE /movies/movie/7
+
+
+
+
+// Grouping of athletes by name and rating
+POST /sports/athlete/_search
+{
+   "size": 0, 
+   "aggregations": {
+      "the_name": {
+         "terms": {
+            "field": "name",
+            "order": {
+               "rating_avg": "desc"
+            }
+         },
+         "aggregations": {
+            "rating_avg": {
+               "avg": {
+                  "field": "rating"
+               }
+            }
+         }
+      }
+   }
+}
+
+// Count of athletes from 22 to 25
+POST /sports/athlete/_search
+{
+   "size": 0,
+   "aggregations": {
+      "age_ranges": {
+         "range": {
+            "script": "DateTime.now().year - doc[\"birthdate\"].date.year",
+            "ranges": [
+               {
+                  "from": 22,
+                  "to": 25
+               }
+            ]
+         }
+      }
+   }
+}
+
+
+// Find count by sport
+POST /sports/athlete/_search
+{
+   "size": 0,
+   "aggregations": {
+      "sport": {
+         "terms": {
+            "field": "sport"
+         }
+      }
+   }
+}
+
+
+// Find athletes within 20 miles group into 2 age range buckets
+POST /sports/athlete/_search
+{
+   "size": 0,
+   "aggregations": {
+      "baseball_player_ring": {
+         "geo_distance": {
+            "field": "location",
+            "origin": "46.12,-68.55",
+            "unit": "mi",
+            "ranges": [
+               {
+                  "from": 0,
+                  "to": 20
+               }
+            ]
+         },
+         "aggregations": {
+            "ring_age_ranges": {
+               "range": {
+                  "script": "DateTime.now().year - doc[\"birthdate\"].date.year",
+                  "ranges": [
+                      { "from": 20, "to": 25 },
+                      { "from": 25, "to": 30 }
+                  ]
+               }
+            }
+         }
+      }
+   }
+}
+

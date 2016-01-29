@@ -1,0 +1,11 @@
+[Unit]
+Description=cors-it service
+
+[Service]
+EnvironmentFile=/etc/sysconfig/swagger
+ExecStart=/opt/swagger/node/bin/node /opt/swagger/cors-it/index.js
+User=swagger
+
+[Install]
+WantedBy=multi-user.target
+

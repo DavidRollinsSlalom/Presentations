@@ -1,0 +1,11 @@
+[Unit]
+Description=Swagger Editor
+
+[Service]
+EnvironmentFile=/etc/sysconfig/swagger
+ExecStart=/opt/swagger/node/bin/http-server /opt/swagger/web
+User=swagger
+
+[Install]
+WantedBy=multi-user.target
+

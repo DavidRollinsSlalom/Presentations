@@ -1,0 +1,21 @@
+[Unit]
+Description=ng-scp-worker
+
+[Service]
+#Type=forking
+RemainAfterExit=true
+#EnvironmentFile=/etc/default/ng-scp-worker
+StandardOutput=null
+User=ng-scp-worker
+Group=ng-scp-worker
+PIDFile=/var/run/ng-scp-worker/running.pid
+ExecStart=/usr/share/ng-scp-worker/bin/ng-scp-worker
+# See MAX_OPEN_FILES in sysconfig
+LimitNOFILE=65535
+# See MAX_LOCKED_MEMORY in sysconfig, use "infinity" when MAX_LOCKED_MEMORY=unlimited and using bootstrap.mlockall: true
+LimitMEMLOCK=infinity
+# Shutdown delay in seconds, before process is tried to be killed with KILL (if configured)
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
