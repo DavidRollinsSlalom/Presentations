@@ -20,7 +20,7 @@ db.products.update(
    },
    { upsert: true }
    );
-   
+
 db.products.find();
 
 -----------------------------
@@ -28,6 +28,11 @@ db.products.find();
 
 
 db.zipcodes.findOne()
+
+
+-----------------------------
+
+db.zipcodes.createIndex( { loc : "2dsphere" } )
 
 
 -----------------------------
@@ -111,6 +116,3 @@ db.zipcodes.aggregate( { $group:
                            smallestCity: { name: "$smallestCity", pop: "$smallestPop" } } } )
 
 -----------------
-
-
-
