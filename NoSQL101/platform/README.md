@@ -1,4 +1,4 @@
-# NG-SCP Vagrant Platform
+# Demo Vagrant Platform
 
 ### Purpose
 
@@ -11,16 +11,8 @@ Included in this server instance is:
 - MongoDB
 - Hazelcast Mancenter
 - ElasticSearch
-- Data from the Dev environment
-
-### How to Use
-
-If you are curious as to where the *.sh files went to & how they migrated into salt states, you can view them here:  http://psl-devgit01.lab.securustech.net/projects/AUTO/repos/saltstack/browse/srv/salt/nextgen
-
-The salt directory is mounted in the vagrant box as /srv/salt, allowing the salt formulas to be executed locally inside of the masterless minion.
 
 To Run:
-* As a peer of ng-scp and platform folders, git clone http://psl-devgit01.lab.securustech.net/projects/AUTO/repos/saltstack repo
 * “vagrant destroy -f && vagrant up“ inside of platform – it will use the salt provisioner
 
 ## Prerequisites:
@@ -63,9 +55,14 @@ vagrant provision
 
 ## Admin UI
 
-[Hazelcast ManCenter](http://localhost:9001/mancenter/login.jsp)
-
 [ElasticSearch HQ](http://localhost:9200/_plugin/HQ/)
+
+
+
+[MongoDB] - localhost:27017
+
+Use MongoClient or RoboMongo to connect.
+
 
 
 
