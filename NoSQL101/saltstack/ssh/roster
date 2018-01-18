@@ -1,6 +1,0 @@
-es-compile02:
-  host: es-compile02.dal.securustech.net
-  user: jtunison
-  sudo: true
-  tty: true
-

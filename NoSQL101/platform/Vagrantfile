@@ -17,9 +17,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network :forwarded_port, guest: 9200, host: 9200    # elasticsearch http port
   config.vm.network :forwarded_port, guest: 9300, host: 9300    # elasticsearch node-to-node communication
 
-  config.vm.synced_folder "..", "/ng-scp"
-  config.vm.synced_folder "../saltstack/srv/salt", "/srv/salt"
-
   config.vm.provider :virtualbox do |vb|
      # Don't boot with headless mode
      #vb.gui = true
